@@ -25,10 +25,30 @@ sub import {
 
     openlog( $ident, $logopt, $facility );
 
-    # Always re-install our handlers, which may have been overridden.  This
-    # way, a "use Carp::Syslog" can be invoked by the user to re-install.
-    $SIG{'__WARN__'} = \&_my_warn;
-    $SIG{'__DIE__'}  = \&_my_die;
+    $SIG{'__WARN__'} = sub {
+        my $hints = ( caller 0 )[10];
+
+        if ( $hints->{'Carp::Syslog'} ) {
+            ( my $message = $_[0] ) =~ s/\n$//;
+            syslog( 'warning', $message );
+        }
+
+        warn $_[0];
+    };
+
+    $SIG{'__DIE__'} = sub {
+        # We don't want to log exception objects.
+        if ( !ref $_[0] ) {
+            my $hints = ( caller 0 )[10];
+
+            if ( $hints->{'Carp::Syslog'} ) {
+                ( my $message = $_[0] ) =~ s/\n$//;
+                syslog( 'err', $message );
+            }
+        }
+
+        die $_[0];
+    };
 
     # Also export Carp's defaults to calling namespace.
     require Carp;
@@ -46,37 +66,6 @@ sub import {
 
 sub unimport {
     $^H{'Carp::Syslog'} = 0;
-}
-
-sub _my_warn {
-    my $hints = ( caller 1 )[10];
-
-    if ( $hints->{'Carp::Syslog'} ) {
-        _my_syslog( 'warning', $_[0] );
-    }
-
-    warn $_[0];
-}
-
-sub _my_die {
-    # We don't want to log exception objects.
-    if ( !ref $_[0] ) {
-        my $hints = ( caller 1 )[10];
-
-        if ( $hints->{'Carp::Syslog'} ) {
-            _my_syslog( 'err', $_[0] );
-        }
-    }
-
-    die $_[0];
-}
-
-sub _my_syslog {
-    my ( $level, $message ) = @_;
-
-    $message =~ s/\n$//;
-
-    syslog( $level, $message );
 }
 
 END {
