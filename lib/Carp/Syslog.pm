@@ -30,17 +30,16 @@ sub import {
     $SIG{'__WARN__'} = \&_my_warn;
     $SIG{'__DIE__'}  = \&_my_die;
 
-    # TODO: Also export Carp's defaults to calling namespace.
+    # Also export Carp's defaults to calling namespace.
     require Carp;
     {
         no strict 'refs';
-      my $callpkg = caller(0);
+        my $caller = caller 0;
 
-        if ($pkg eq "Exporter" and @_ and $_[0] eq "import") {
-                *{$callpkg."::import"} = \&import;
-                    return;
-
-= \&Carp::carp;
+        *{ $caller . '::carp' }    = \&Carp::carp;
+        *{ $caller . '::croak' }   = \&Carp::croak;
+        *{ $caller . '::confess' } = \&Carp::confess;
+    }
 
     $^H{+__PACKAGE__} = 1;
 }
