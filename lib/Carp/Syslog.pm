@@ -41,17 +41,17 @@ sub import {
         *{ $caller . '::confess' } = \&Carp::confess;
     }
 
-    $^H{+__PACKAGE__} = 1;
+    $^H{'Carp::Syslog'} = 1;
 }
 
 sub unimport {
-    $^H{+__PACKAGE__} = 0;
+    $^H{'Carp::Syslog'} = 0;
 }
 
 sub _my_warn {
-    my $hints = ( caller(0) )[10];
+    my $hints = ( caller 1 )[10];
 
-    if ( $hints->{+__PACKAGE__} ) {
+    if ( $hints->{'Carp::Syslog'} ) {
         _my_syslog( 'warning', $_[0] );
     }
 
@@ -61,9 +61,9 @@ sub _my_warn {
 sub _my_die {
     # We don't want to log exception objects.
     if ( !ref $_[0] ) {
-        my $hints = ( caller(0) )[10];
+        my $hints = ( caller 1 )[10];
 
-        if ( $hints->{+__PACKAGE__} ) {
+        if ( $hints->{'Carp::Syslog'} ) {
             _my_syslog( 'err', $_[0] );
         }
     }
