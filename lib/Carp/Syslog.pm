@@ -37,12 +37,22 @@ sub import {
     };
 
     $SIG{'__DIE__'} = sub {
-        # We don't want to log exception objects.
-        if ( !ref $_[0] ) {
-            my $hints = ( caller 0 )[10];
+        if ( ( caller 0 )[10]->{'Carp::Syslog'} ) { # hint on?
+            my $message;
 
-            if ( $hints->{'Carp::Syslog'} ) {
-                ( my $message = $_[0] ) =~ s/\n$//;
+            if ( ref $_[0] ) {
+                # We only want to to log references if they can stringify.
+                require overload;
+                if ( "$_[0]" ne overload::StrVal( $_[0] ) ) {
+                    $message = "$_[0]";
+                }
+            }
+            else {
+                $message = $_[0];
+            }
+
+            if ( defined $message ) {
+                $message =~ s/\n$//;
                 syslog( 'err', $message );
             }
         }
