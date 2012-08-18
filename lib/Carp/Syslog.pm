@@ -26,9 +26,7 @@ sub import {
     openlog( $ident, $logopt, $facility );
 
     $SIG{'__WARN__'} = sub {
-        my $hints = ( caller 0 )[10];
-
-        if ( $hints->{'Carp::Syslog'} ) {
+        if ( ( caller 0 )[10]->{'Carp::Syslog'} ) { # hint on?
             ( my $message = $_[0] ) =~ s/\n$//;
             syslog( 'warning', $message );
         }
