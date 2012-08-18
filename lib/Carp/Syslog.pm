@@ -4,6 +4,8 @@ use v5.10;
 use strict;
 use Sys::Syslog;
 
+our $VERSION = '0.01';
+
 sub import {
     my ( $class, $args ) = @_;
 
