@@ -84,7 +84,7 @@ END {
 
 =head1 NAME
 
-Carp::Syslog - ...
+Carp::Syslog - Send warn and die messages to syslog
 
 =head1 SYNOPSIS
 
@@ -98,7 +98,6 @@ Carp::Syslog - ...
     # Shortcut for simplicity.
     use Carp::Syslog 'user';
 
-    # Revert to whatever was in the handlers before.
     {
         no Carp::Syslog;
 
@@ -124,14 +123,23 @@ I got tired of writing this all the time:
     END { closelog() }
 
 Sure, there are modules like L<Log::Log4perl> and L<Log::Dispatch>, but those
-are overly complicated for quick, sysadminy scripts.  I just wanted my syslog
-functions.
+are overly complicated for quick, system administrator style scripts.  The
+C<Carp::Syslog> module allows, in one line (or less if used on the command
+line), to send all warn() and die() calls to the system's syslog.
 
 =head1 CAVEATS
 
 The C<__WARN__> and C<__DIE__> signal handlers are overridden.
 
 Calling cluck() or confess() will really fill up your logs.
+
+=head1 AUTHOR
+
+Chris Grau L<mailto:cgrau@cpan.org>
+
+=head1 COPYRIGHT AND LICENSE
+
+Copyright (c) 2011-2012, Chris Grau.
 
 =head1 SEE ALSO
 
